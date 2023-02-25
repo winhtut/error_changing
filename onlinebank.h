@@ -44,6 +44,7 @@ void recovery_key_validation(char reKey[30]);
 void copy_two_char_array(char receiver[200] ,char transmitter[200] );
 
 
+
 struct trans{
     char note[200];
 };
@@ -84,7 +85,7 @@ void main_menu(){
     char input[2];
     printf("Welcome to our OnlineBank-NCC!\n");
     printf("Press 1 to Login!\nPress 2 to Register!\nPress 3 to Exit!>>:");
-    scanf(" %[^\n]",&input);
+    scanf(" %[^\n]",&input[0]);
 
     int option = check_input(input);
     if(option == 49){
@@ -153,13 +154,13 @@ void rEgister(){
         printf(" Del re_email %s\n",re_email);
         printf("Your email was saved:\n");
         printf("Enter your username:\n");
-        scanf(" %[^\n]",&re_name);
+        scanf(" %[^\n]",&re_name[0]);
         nrc_valid=-1;
 
         while (nrc_valid==-1){
 
             printf("Enter your NRC information:");
-            scanf(" %[^\n]",&re_nrc);
+            scanf(" %[^\n]",&re_nrc[0]);
 
             nrc_validation(re_nrc);
 
@@ -173,7 +174,7 @@ void rEgister(){
         while (strong_pass_valid==-1){
 
             printf("Enter your password:");
-            scanf(" %[^\n]",&re_pass);
+            scanf(" %[^\n]",&re_pass[0]);
 
             strong_pass_validation(re_pass);
 
@@ -203,7 +204,7 @@ void rEgister(){
 
         while (eKey_valid==-1){
             printf("[X]Enter your Encryption Key(from 4 to 6 char):");
-            scanf(" %[^\n]",&re_encrypt_key);
+            scanf(" %[^\n]",&re_encrypt_key[0]);
             encryption_key_validation(re_encrypt_key);
 
             if(eKey_valid==-1){
@@ -215,7 +216,7 @@ void rEgister(){
         while (reKey_valid==-1){
 
             printf("[X]Enter your Recover Key carefully:");
-            scanf(" %[^\n]",&re_recovery_key);
+            scanf(" %[^\n]",&re_recovery_key[0]);
 
             recovery_key_validation(re_recovery_key);
 
@@ -227,15 +228,15 @@ void rEgister(){
         printf("[+]Your recover key was saved!\n");
 
         printf("[X]Enter your currency to use:");
-        scanf(" %[^\n]",&re_currency);
+        scanf(" %[^\n]",&re_currency[0]);
         printf("[X]Enter your amount:");
         scanf(" %llu",&re_current_amount);
         printf("[X]Enter your monthly income:");
         scanf(" %u",&re_monthly_income);
         printf("[X]Enter your address:");
-        scanf(" %[^\n]",&re_address);
+        scanf(" %[^\n]",&re_address[0]);
         printf("[X]Enter your opening note:");
-        scanf(" %[^\n]",&re_note);
+        scanf(" %[^\n]",&re_note[0]);
         db[G_index].id = G_index+1;
 
         copy_two_char_array(db[G_index].email,re_email);
@@ -276,19 +277,23 @@ void rEgister(){
 
 }
 
-void printing_all_data(){
+void printing_all_data() {
 
 
-    for(int user=0; user<G_index ; user++){
+    for (int user = 0; user < G_index; user++) {
 
-        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s",db[user].id ,db[user].name ,db[user].nrc,db[user].email,db[user].password,db[user].phoneNumber,db[user].encryption_key,db[user].recovery_key,db[user].account_status,db[user].account_type,db[user].account_level,db[user].minimum_opening_deposit,db[user].currency,db[user].current_amount,db[user].loanStatus,db[user].monthly_income,db[user].loan_amount,db[user].loan_rate,db[user].address);
-        for(int gcc=0; gcc<= space_array[user]-19 ; gcc++){
-            printf("-%s",db[user].tr[gcc].note);
+        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s", db[user].id, db[user].name, db[user].nrc,
+               db[user].email, db[user].password, db[user].phoneNumber, db[user].encryption_key, db[user].recovery_key,
+               db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
+               db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
+               db[user].loan_amount, db[user].loan_rate, db[user].address);
+        for (int gcc = 0; gcc <= space_array[user] - 19; gcc++) {
+            printf("-%s", db[user].tr[gcc].note);
         }
         printf("\n");
 
     }
-
+}
 
 void recovery_key_validation(char reKey[30]){
     int reKey_couunter = char_counting(reKey);
@@ -496,7 +501,7 @@ void loading_from_file(){
             fscanf(fptr ,"%u%s%s%s%s%u%s%s%s%d%d%d%s%llu%s%u%u%f%s",&db[user].id ,&db[user].name ,&db[user].nrc,&db[user].email,&db[user].password,&db[user].phoneNumber,&db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address);
 
             for(register int trc=0; trc<= space_array[user]-19 ; trc++ ){
-                fscanf(fptr , "%s",&db[user].tr[trc].note);
+                fscanf(fptr , "%s",&db[user].tr[trc].note[0]);
             }
             if(db[user].id == 0){
                 break;
@@ -511,12 +516,6 @@ void loading_from_file(){
     }
 
     fclose(fptr);
-
-
-}
-
-
-
 
 
 }
@@ -561,9 +560,9 @@ void space_counter(){
 void copy_two_char_array(char receiver[200] ,char transmitter[200] ){
 
 
-    for(register int i=0; i<200; i++){
-        receiver[i]='\0';
-    }
+//    for(register int i=0; i<200; i++){
+//        receiver[i]='\0';
+//    }
 
     int transmit_counter =char_counting(transmitter);
     for(int i=0; i<transmit_counter; i++){

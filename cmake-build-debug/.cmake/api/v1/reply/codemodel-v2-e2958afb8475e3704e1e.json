@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.21"
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "OnlineG_classErrorTest::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-OnlineG_classErrorTest-Debug-91ba2c01532938eab528.json",
+					"jsonFile" : "target-OnlineG_classErrorTest-Debug-df00e5070f61d6c11c41.json",
 					"name" : "OnlineG_classErrorTest",
 					"projectIndex" : 0
 				}
@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "D:/mySrouceCode/OnlineG-classErrorTest/cmake-build-debug",
-		"source" : "D:/mySrouceCode/OnlineG-classErrorTest"
+		"build" : "/Users/ncc/CLionProjects/error_changing/cmake-build-debug",
+		"source" : "/Users/ncc/CLionProjects/error_changing"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 3
+		"minor" : 4
 	}
 }
