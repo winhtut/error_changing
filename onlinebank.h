@@ -604,6 +604,31 @@ void loading_from_file(){
 
 }
 
+void recordingDataToFile(){
+
+    FILE *fptr= fopen("encrypted_data.txt","w");
+    if(fptr == NULL){
+
+        printf("file opening error at recordingToFile Function():\n");
+
+    } else{
+        for(int user=0; user<G_index; user++){
+
+            fprintf(fptr ,"%u%c%s%c%s%c%s%c%s%c%u%c%s%c%s%c%s%c%d%c%d%c%d%c%s%c%llu%c%s%c%u%c%u%c%f%c%s%c%d%c",db[user].id ,db[user].name ,db[user].nrc,db[user].email,db[user].password,db[user].phoneNumber,db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
+            for(int gcc=0; gcc<space_array[user]-20 ; gcc++){
+
+                fprintf(fptr," %s",db[user].tr[gcc].note);
+            }
+            fprintf(fptr,"%c",'\n');
+
+        }
+
+        printf("Recording Complete to '8-db.txt' File!\n");
+
+    }
+
+}
+
 void space_counter(){
 
     FILE *fptr = fopen("encrypted_data.txt","r");
@@ -947,6 +972,8 @@ void get_limit_time(int user_index){
 //    }
 //
 //}
+
+
 
 
 #endif //ONLINEBANKPJ_ONLINEBANK_H
