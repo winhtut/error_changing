@@ -6,6 +6,9 @@
 #define ONLINEBANKPJ_ONLINEBANK_H
 #include "stdio.h"
 #include "stdlib.h"
+#include "time.h"
+
+//#include "user_setting.h"
 #define USERSIZE 1000
 #define DATA_COUNT 20
 
@@ -21,6 +24,9 @@ int strong_pass_valid=-1;
 int phone_valid=-1;
 int eKey_valid=-1;
 int reKey_valid=-1;
+int phone_found=-1;
+unsigned int trans_limit=0;
+
 
 // End of Global Variables
 
@@ -42,7 +48,16 @@ void phone_validation(unsigned int phone);
 void encryption_key_validation(char eKey[30]);
 void recovery_key_validation(char reKey[30]);
 void copy_two_char_array(char receiver[200] ,char transmitter[200] );
-
+void user_sector();
+void transfer_money();
+void phone_number_finding(unsigned int to_find_ph);
+void money_transaction(int transmit , int receiver , unsigned int amount);
+void printing_specific_data(int user);
+void user_withdraw();
+void get_time();
+void transacitonRecord(int userDBIndex,int uFound,char who);
+void get_amount(int user_index);
+void get_limit_time(int user_index);
 
 
 struct trans{
@@ -60,7 +75,7 @@ struct info{
     char recovery_key[10];//>>
     char account_status[10]; //$
     int account_type; //1 personal ,2 business , 3 othersss...... //$
-    int account_level;//$
+    int account_level;// 1 normal 2 inter 3 high boss
     int minimum_opening_deposit;//$
     char currency[5];//>>
     unsigned long long int current_amount;//llu//>>
@@ -69,6 +84,7 @@ struct info{
     unsigned int loan_amount;//$
     float loan_rate;//$
     char address[100];//>>
+    int trans_amount_limit_perday;
 
     struct trans tr[300]; //transaction//>>
 
@@ -78,6 +94,14 @@ struct info{
 };
 
 struct info db[USERSIZE];
+
+
+
+struct currentTime{
+
+    char curTime[25];
+};
+struct currentTime getCTime[1];
 
 
 void main_menu(){
@@ -111,9 +135,52 @@ int check_input(char input[2]){
 
 void login(){
     char l_email[50];
-    printf("This is Online Bank Login!\n");
-    printf("Enter your email to login!>>:");
-    scanf(" %[^\n]",&l_email[0]);
+    char l_pass[50];
+    email_found=-1;
+    two_charArray=-1;
+    while (email_found == -1 || two_charArray==-1) {
+        printf("This is Online Bank Login!\n");
+        printf("Enter your email to login!>>:");
+        scanf(" %[^\n]", &l_email[0]);
+        printf("Enter your password to login!>>:");
+        scanf(" %[^\n]", &l_pass[0]);
+
+        email_exist_checking(l_email);
+        compare_two_charArray(db[email_found].password,l_pass);
+
+        if(email_found == -1 || two_charArray==-1){
+            email_found=-1;
+            two_charArray=-1;
+            printf("Your Login credential incorrect!\n");
+        }
+
+    }
+
+
+    user_sector();
+
+
+}
+
+void user_sector(){
+    printf("Welcome Mr/s : %s\n",db[email_found].name);
+    printf("Your Current Amount : %llu\n",db[email_found].current_amount);
+    char user_option[2];
+
+    printf("Press 1 To Transfer Money:\nPress 2 to Withdraw :\n");
+    printf("Press 3 To Cash In:\nPress 4 to get your Transaction Record :\n");
+    printf("Press 5 To Loan:\nPress 6 to get Main Menu:\n");
+    printf("Press 7 To Exit:\nEnter your option:");
+    scanf(" %[^\n]",&user_option[0]);
+
+    int option = check_input(user_option);
+
+    if(option == 49){
+        transfer_money();
+    } else if(option==50){
+        user_withdraw();
+
+    }
 
 
 }
@@ -268,9 +335,13 @@ void rEgister(){
         db[G_index].loan_amount = db[2].loan_amount;
         db[G_index].loan_rate = db[2].loan_rate;
 
+        space_array[G_index]=19;
         G_index++;
 
+
         printing_all_data();
+        printf("[X] Registration Success: Mr/s: %s\n",re_name);
+        main_menu();
 
 
     }
@@ -282,17 +353,31 @@ void printing_all_data() {
 
     for (int user = 0; user < G_index; user++) {
 
-        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s", db[user].id, db[user].name, db[user].nrc,
+        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s-%d", db[user].id, db[user].name, db[user].nrc,
                db[user].email, db[user].password, db[user].phoneNumber, db[user].encryption_key, db[user].recovery_key,
                db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
                db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
-               db[user].loan_amount, db[user].loan_rate, db[user].address);
-        for (int gcc = 0; gcc <= space_array[user] - 19; gcc++) {
+               db[user].loan_amount, db[user].loan_rate, db[user].address,db[user].trans_amount_limit_perday);
+        for (int gcc = 0; gcc <= space_array[user] - 20; gcc++) {
             printf("-%s", db[user].tr[gcc].note);
         }
         printf("\n");
 
     }
+}
+
+void printing_specific_data(int user){
+
+    printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s", db[user].id, db[user].name, db[user].nrc,
+           db[user].email, db[user].password, db[user].phoneNumber, db[user].encryption_key, db[user].recovery_key,
+           db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
+           db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
+           db[user].loan_amount, db[user].loan_rate, db[user].address,db[user].trans_amount_limit_perday);
+    for (int gcc = 0; gcc <= space_array[user] - 19; gcc++) {
+        printf("-%s", db[user].tr[gcc].note);
+    }
+    printf("\n");
+
 }
 
 void recovery_key_validation(char reKey[30]){
@@ -381,7 +466,7 @@ void nrc_validation(char nrc[20]){
 
     for(int i=0; i<3; i++){
 
-            two_charArray=-1;
+        two_charArray=-1;
         compare_two_charArray(nrc,db[i].nrc);
         if(two_charArray ==1){
             nrc_valid=1;
@@ -498,9 +583,9 @@ void loading_from_file(){
 
         for(register int user=0; user < USERSIZE ; user++){
 
-            fscanf(fptr ,"%u%s%s%s%s%u%s%s%s%d%d%d%s%llu%s%u%u%f%s",&db[user].id ,&db[user].name ,&db[user].nrc,&db[user].email,&db[user].password,&db[user].phoneNumber,&db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address);
+            fscanf(fptr ,"%u%s%s%s%s%u%s%s%s%d%d%d%s%llu%s%u%u%f%s%d",&db[user].id ,&db[user].name ,&db[user].nrc,&db[user].email,&db[user].password,&db[user].phoneNumber,&db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
 
-            for(register int trc=0; trc<= space_array[user]-19 ; trc++ ){
+            for(register int trc=0; trc<= space_array[user]-20 ; trc++ ){
                 fscanf(fptr , "%s",&db[user].tr[trc].note[0]);
             }
             if(db[user].id == 0){
@@ -509,7 +594,6 @@ void loading_from_file(){
             G_index++;
 
         }
-
 
     } else{
         printf("File opening error at Loading form file function!\n");
@@ -570,9 +654,299 @@ void copy_two_char_array(char receiver[200] ,char transmitter[200] ){
         receiver[i] = transmitter[i];
     }
 
+}
+
+//user option
+void transfer_money(){
+
+    unsigned int amount_toTrans=0;
+    unsigned int receiver_phone=0;
+    char trans_pass[50];
+    phone_found=-1;
+    while (phone_found==-1) {
+        printf("Enter receiver phone number>>:");
+        scanf("%u", &receiver_phone);
+        phone_number_finding(receiver_phone);
+
+        if(phone_found==-1){
+            printf("This is phone number is Not found in our bank\n");
+        }
+
+    }
+    while (1) {
+        printf(" Enter amount to send for %s :  %s >>:", db[phone_found].name, db[phone_found].email);
+        scanf("%u", &amount_toTrans);
+        //write here transaction limit per day
+
+        if(amount_toTrans < db[email_found].current_amount-1000){
+            break;
+        }
+    }
+    two_charArray=-1;
+    int wrong_counter=0;
+    while (two_charArray==-1){
+        printf("Your current amount %llu\nTransfer amount %u :\n",db[email_found].current_amount,amount_toTrans);
+        printf("Enter your password to confirm for transaction>>:");
+        scanf(" %[^\n]",&trans_pass[0]);
+
+        compare_two_charArray(db[email_found].password,trans_pass);
+        if(two_charArray==-1){
+            wrong_counter++;
+            if(wrong_counter==3){
+                transfer_money();
+                break;
+            }
+        }
+    }
+
+    money_transaction(email_found,phone_found,amount_toTrans);
 
 
 }
+
+void user_withdraw(){
+    char with_pass[50];
+    unsigned int withdraw_amount=0;
+    printf("Your current amount: %s : %llu\n",db[email_found].name , db[email_found].current_amount);
+    printf("Enter amount to withdraw>>:");
+    scanf("%u",&withdraw_amount);
+
+    if(withdraw_amount<db[email_found].current_amount-1000){
+        printf("Enter your password to proceed withdraw>>:");
+        scanf(" %[^\n]",&with_pass[0]);
+        two_charArray=-1;
+        compare_two_charArray(db[email_found].password , with_pass);
+        if(two_charArray==1){
+            printf("Get your withdraw amount: %u\n",withdraw_amount);
+            printf("Your current amount: %llu\n",db[email_found].current_amount-withdraw_amount);
+            user_sector();
+        } else{
+            printf("[-]Wrong credential:\n");
+            user_withdraw();
+        }
+    } else{
+        printf("Insufficient Balance:\n");
+        user_withdraw();
+    }
+
+}
+
+void money_transaction(int transmit , int receiver , unsigned int amount){
+
+
+    db[transmit].current_amount= db[transmit].current_amount-amount;
+    db[receiver].current_amount = db[receiver].current_amount+amount;
+    transacitonRecord(transmit,receiver,'t');
+    transacitonRecord(transmit,receiver,'r');
+    printf("Transaction complete:\n");
+    printf("Your current amount: %s : %llu\n",db[transmit].name , db[transmit].current_amount);
+    printing_specific_data(transmit);
+    printf("\n\n\n\n");
+    printing_all_data();
+    user_sector();
+
+}
+
+void phone_number_finding(unsigned int to_find_ph){
+
+    for(int i=0; i<G_index; i++){
+
+        if(to_find_ph == db[i].phoneNumber){
+            phone_found=i;
+            break;
+        }
+    }
+
+}
+
+void get_time(){
+    time_t tm;
+    time(&tm);
+
+    printf("Current Date/Time = %s", ctime(&tm));
+
+
+    FILE *fptr= fopen("mytime.txt","w");
+    fprintf(fptr,"%s", ctime(&tm));
+    int index=0;
+    getCTime[0].curTime[index]='-';
+    index++;
+    fclose(fptr);
+    FILE *rFptr = fopen("mytime.txt","r");
+    char c = fgetc(rFptr);
+    while (!feof(rFptr)){
+        if(c ==' '){
+            getCTime[0].curTime[index]='-';
+            c = fgetc(rFptr);
+            index++;
+
+        } else{
+            getCTime[0].curTime[index] = c;
+            c = fgetc(fptr);
+            index++;
+
+        }
+
+    }
+
+
+
+}
+
+
+void transacitonRecord(int userDBIndex,int uFound,char who){
+    int transfer = char_counting(db[userDBIndex].name);
+    int accept = char_counting(db[uFound].name);
+
+    if(who == 't') {
+
+        char toInsert1[4] ={'F','r','o','m'};
+        char toInsert2[2] ={'t','o'};
+        //db[userDBIndex].transRC[spaceArray[userDBIndex]].note
+
+        int indexPoint=0;
+        for(int x=indexPoint; x<4; x++){
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[x]=toInsert1[x];
+            indexPoint++;
+        }
+        int nameIndex=0;
+        int endPoint = indexPoint+transfer;
+        for(int x=indexPoint; x<endPoint; x++){
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=db[userDBIndex].name[nameIndex];
+            nameIndex++;
+            indexPoint++;
+        }
+        nameIndex=0;
+        endPoint = indexPoint+2;
+        for(int x=indexPoint; x<endPoint; x++){
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=toInsert2[nameIndex];
+            nameIndex++;
+            indexPoint++;
+        }
+        nameIndex=0;
+        endPoint = indexPoint+accept;
+        for(int x=indexPoint; x<endPoint; x++){
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=db[uFound].name[nameIndex];
+            nameIndex++;
+            indexPoint++;
+        }
+        nameIndex=0;
+        get_time();
+        for(int win=endPoint; win<25+endPoint ; win++ ){
+
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[win]=getCTime[0].curTime[nameIndex];
+            nameIndex++;
+        }
+        space_array[userDBIndex] = space_array[userDBIndex]+1;
+    } else{
+
+        char receiveFrom[13] = {'-','R','e','c','e','i','v','e','F','r','o','m','-'};
+        int indexPoint=0;
+        int endpoint=0;
+        int reIndex=0;
+        for(int i=0;i<accept;i++){
+            db[uFound].tr[space_array[uFound]-20].note[i]=db[uFound].name[i];
+            indexPoint++;
+        }
+        endpoint=accept+13;
+        for(int i=indexPoint;i<endpoint;i++){
+            db[uFound].tr[space_array[uFound]-20].note[i]=receiveFrom[reIndex];
+            reIndex++;
+
+        }
+        reIndex=0;
+        int toendpoint=endpoint+transfer;
+        for(int i=endpoint;i<toendpoint;i++){
+            db[uFound].tr[space_array[uFound]-20].note[i]=db[userDBIndex].name[reIndex];
+            reIndex++;
+        }
+
+        reIndex=0;
+        get_time();
+        for(int win=toendpoint; win<25+toendpoint ; win++ ){
+
+            db[uFound].tr[space_array[uFound]-20].note[win]=getCTime[0].curTime[reIndex];
+            reIndex++;
+        }
+
+        space_array[uFound] = space_array[uFound]+1;
+
+    }
+
+}
+
+void get_amount(int user_index){
+
+    int p_or_b = db[user_index].account_type;
+    int acc_level = db[user_index].account_level;
+
+    switch (p_or_b) {
+        case 1:
+            if(acc_level==1){
+                trans_limit=5000;
+            } else if(acc_level==2){
+                trans_limit=20000;
+            } else{
+                trans_limit = 50000;
+            }
+            break;
+
+        case 2:
+            if(acc_level==1){
+                trans_limit=50000;
+            } else if(acc_level==2){
+                trans_limit=200000;
+            } else{
+                trans_limit = 500000;
+            }
+            break;
+
+        case 3:
+            if(acc_level==1){
+                trans_limit=500000;
+            } else if(acc_level==2){
+                trans_limit=2000000;
+            } else{
+                trans_limit = 5000000;
+            }
+            break;
+    }
+
+}
+
+void get_limit_time(int user_index){
+    int last=0;
+    int records = space_array[user_index]-20;
+
+    for(int i=0; i<=records; i++){
+
+        last=i;
+
+    }
+
+    printf("\n last: record %s",db[user_index].tr[last].note);
+
+
+
+
+}
+
+//void get_time_and_amount(int user_index){
+//
+//    unsigned int trans_limit=0;
+//    int p_or_b = db[user_index].account_type;
+//    int acc_level = db[user_index].account_level;
+//
+//
+//    unsigned int amount_array[7]={5000,20000,50000,200000,500000,2000000,5000000};
+//    for(int i=1; i<7 ; i++){
+//        for(int a=0; a<i; a++){
+//
+//        }
+//
+//    }
+//
+//}
 
 
 #endif //ONLINEBANKPJ_ONLINEBANK_H

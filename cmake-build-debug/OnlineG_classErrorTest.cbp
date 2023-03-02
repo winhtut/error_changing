@@ -81,6 +81,9 @@
 		<Unit filename="/Users/ncc/CLionProjects/error_changing/main.c">
 			<Option target="OnlineG_classErrorTest"/>
 		</Unit>
+		<Unit filename="/Users/ncc/CLionProjects/error_changing/onlinebank.h">
+			<Option target="OnlineG_classErrorTest"/>
+		</Unit>
 		<Unit filename="/Users/ncc/CLionProjects/error_changing/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
