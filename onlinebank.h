@@ -27,6 +27,8 @@ int reKey_valid=-1;
 int phone_found=-1;
 unsigned int trans_limit=0;
 
+char int_to_charArray[50];
+
 
 // End of Global Variables
 
@@ -58,6 +60,10 @@ void get_time();
 void transacitonRecord(int userDBIndex,int uFound,char who);
 void get_amount(int user_index);
 void get_limit_time(int user_index);
+
+
+void integer_to_charArrayFun(unsigned int integer);
+unsigned int char_to_integer_fun(char char_array[50]);
 
 
 struct trans{
@@ -614,7 +620,7 @@ void recordingDataToFile(){
     } else{
         for(int user=0; user<G_index; user++){
 
-            fprintf(fptr ,"%u%c%s%c%s%c%s%c%s%c%u%c%s%c%s%c%s%c%d%c%d%c%d%c%s%c%llu%c%s%c%u%c%u%c%f%c%s%c%d%c",db[user].id ,db[user].name ,db[user].nrc,db[user].email,db[user].password,db[user].phoneNumber,db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
+            fprintf(fptr ,"%u%c%s%c%s%c%s%c%s%c%u%c%s%c%s%c%s%c%d%c%d%c%d%c%s%c%llu%c%s%c%u%c%u%c%f%c%s%c%d",db[user].id ,db[user].name ,db[user].nrc,db[user].email,db[user].password,db[user].phoneNumber,db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
             for(int gcc=0; gcc<space_array[user]-20 ; gcc++){
 
                 fprintf(fptr," %s",db[user].tr[gcc].note);
@@ -761,6 +767,8 @@ void money_transaction(int transmit , int receiver , unsigned int amount){
 
     db[transmit].current_amount= db[transmit].current_amount-amount;
     db[receiver].current_amount = db[receiver].current_amount+amount;
+    //for insert amount to transaction record will get character array;
+    integer_to_charArrayFun(amount);
     transacitonRecord(transmit,receiver,'t');
     transacitonRecord(transmit,receiver,'r');
     printf("Transaction complete:\n");
@@ -822,6 +830,8 @@ void get_time(){
 void transacitonRecord(int userDBIndex,int uFound,char who){
     int transfer = char_counting(db[userDBIndex].name);
     int accept = char_counting(db[uFound].name);
+    int amount_counter  = char_counting(int_to_charArray);
+
 
     if(who == 't') {
 
@@ -857,12 +867,22 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
         }
         nameIndex=0;
         get_time();
+
         for(int win=endPoint; win<25+endPoint ; win++ ){
 
             db[userDBIndex].tr[space_array[userDBIndex]-20].note[win]=getCTime[0].curTime[nameIndex];
             nameIndex++;
         }
+        nameIndex=0;
+        db[userDBIndex].tr[space_array[userDBIndex]-20].note[25+endPoint]='$';
+        for(int amount = 25+endPoint+1 ; amount<25+endPoint+amount_counter+1 ; amount++){
+
+            db[userDBIndex].tr[space_array[userDBIndex]-20].note[amount] = int_to_charArray[nameIndex];
+            nameIndex++;
+        }
         space_array[userDBIndex] = space_array[userDBIndex]+1;
+
+
     } else{
 
         char receiveFrom[13] = {'-','R','e','c','e','i','v','e','F','r','o','m','-'};
@@ -893,6 +913,14 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
             db[uFound].tr[space_array[uFound]-20].note[win]=getCTime[0].curTime[reIndex];
             reIndex++;
         }
+        reIndex=0;
+        db[uFound].tr[space_array[uFound]-20].note[25+toendpoint]='$';
+        for(int amount = 26+toendpoint ; amount<26+toendpoint+amount_counter ; amount++){
+
+            db[uFound].tr[space_array[uFound]-20].note[amount] = int_to_charArray[reIndex];
+            reIndex++;
+        }
+
 
         space_array[uFound] = space_array[uFound]+1;
 
@@ -950,9 +978,29 @@ void get_limit_time(int user_index){
     }
 
     printf("\n last: record %s",db[user_index].tr[last].note);
+    int last_record_counter =char_counting(db[user_index].tr[last].note);
+    int amount_counter=0;
+    for(int aaa=0; aaa<last_record_counter ; aaa++){
 
+        if( db[user_index].tr[last].note[aaa]=='$'){
 
+            break;
+        }
+        amount_counter++;
 
+    }
+
+    int amount_endPoint =last_record_counter-amount_counter;
+
+    char amount_char_array[10];
+
+    for(int gcc=0; gcc<=amount_endPoint ; gcc++){
+        amount_char_array[gcc]= db[user_index].tr[last].note[amount_counter+1];
+        amount_counter++;
+    }
+    unsigned int last_amount = char_to_integer_fun(amount_char_array);
+
+    printf(" Last amount  %u\n",last_amount);
 
 }
 
@@ -974,6 +1022,52 @@ void get_limit_time(int user_index){
 //}
 
 
+void integer_to_charArrayFun(unsigned int integer){
+        int index=0;
+        FILE *fptr = fopen("whw.txt","w");
+        if(fptr==NULL){
+            printf("[-]Error at integer_to_charArray\n");
+        } else{
 
+            fprintf(fptr,"%d",integer);
+        }
+    fclose(fptr);
+        FILE *fptr2 = fopen("whw.txt","r");
+    char c = fgetc(fptr2);
+    while (!feof(fptr2)){
+
+        int_to_charArray[index]=c;
+        c = fgetc(fptr);
+        index++;
+    }
+    fclose(fptr2);
+
+}
+
+unsigned int char_to_integer_fun(char char_array[50]){
+
+    unsigned int char_to_int_data = 0;
+
+    FILE *fptr = fopen("whw.txt","w");
+    if(fptr==NULL){
+        printf("Error \n");
+    } else{
+        fprintf(fptr,"%s",char_array);
+
+    }
+    fclose(fptr);
+
+    FILE *fptr2 = fopen("whw.txt","r");
+    if(fptr2 == NULL){
+
+        printf("Error\n");
+
+    } else{
+
+        fscanf(fptr,"%d",&char_to_int_data);
+    }
+
+    return char_to_int_data;
+}
 
 #endif //ONLINEBANKPJ_ONLINEBANK_H
