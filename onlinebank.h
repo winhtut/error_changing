@@ -29,6 +29,11 @@ unsigned int trans_limit=0;
 
 char int_to_charArray[50];
 
+//for amount and time
+unsigned int last_amount=0;
+unsigned int last_time=0;
+unsigned int last_hour=0;
+
 
 // End of Global Variables
 
@@ -59,7 +64,9 @@ void user_withdraw();
 void get_time();
 void transacitonRecord(int userDBIndex,int uFound,char who);
 void get_amount(int user_index);
-void get_limit_time(int user_index);
+void get_amount_limit_and_time(int user_index);
+unsigned int get_current_time_toCalculate();
+unsigned int get_current_hour_toCalculate();
 
 
 void integer_to_charArrayFun(unsigned int integer);
@@ -729,8 +736,34 @@ void transfer_money(){
             }
         }
     }
+    // write transfer amount limit here
+    get_amount(email_found);
+    //trans_limit
+    get_amount_limit_and_time(email_found);
+    //last_amount , last_time , last_hours
+    unsigned int current_hour = get_current_hour_toCalculate();
 
-    money_transaction(email_found,phone_found,amount_toTrans);
+    if(last_hour!=current_hour){
+        money_transaction(email_found,phone_found,amount_toTrans);
+    } else {
+        unsigned int current_minute = get_current_time_toCalculate();
+        unsigned int time_different = current_minute - last_time;
+        if (time_different > 3) {
+            money_transaction(email_found, phone_found, amount_toTrans);
+        } else {
+            if (last_amount + amount_toTrans > trans_limit) {
+                printf("Your daily limit was over:\n\n");
+                transfer_money();
+            }
+
+        }
+    }
+
+
+
+
+
+
 
 
 }
@@ -795,6 +828,7 @@ void phone_number_finding(unsigned int to_find_ph){
 void get_time(){
     time_t tm;
     time(&tm);
+    int time_space_counter=0;
 
     printf("Current Date/Time = %s", ctime(&tm));
 
@@ -809,9 +843,16 @@ void get_time(){
     char c = fgetc(rFptr);
     while (!feof(rFptr)){
         if(c ==' '){
-            getCTime[0].curTime[index]='-';
-            c = fgetc(rFptr);
-            index++;
+            time_space_counter++;
+            if(time_space_counter==4){
+                getCTime[0].curTime[index]='@';
+                c = fgetc(rFptr);
+                index++;
+            } else {
+                getCTime[0].curTime[index] = '-';
+                c = fgetc(rFptr);
+                index++;
+            }
 
         } else{
             getCTime[0].curTime[index] = c;
@@ -963,13 +1004,19 @@ void get_amount(int user_index){
                 trans_limit = 5000000;
             }
             break;
+        default:
+            break;
     }
 
 }
 
-void get_limit_time(int user_index){
+void get_amount_limit_and_time(int user_index){
     int last=0;
     int records = space_array[user_index]-20;
+    int amount_counter=0;
+    int time_index_counter=0;
+    char time_array[2];
+    char last_hours_array[2];
 
     for(int i=0; i<=records; i++){
 
@@ -979,7 +1026,7 @@ void get_limit_time(int user_index){
 
     printf("\n last: record %s",db[user_index].tr[last].note);
     int last_record_counter =char_counting(db[user_index].tr[last].note);
-    int amount_counter=0;
+
     for(int aaa=0; aaa<last_record_counter ; aaa++){
 
         if( db[user_index].tr[last].note[aaa]=='$'){
@@ -998,11 +1045,52 @@ void get_limit_time(int user_index){
         amount_char_array[gcc]= db[user_index].tr[last].note[amount_counter+1];
         amount_counter++;
     }
-    unsigned int last_amount = char_to_integer_fun(amount_char_array);
+    last_amount = char_to_integer_fun(amount_char_array);
 
     printf(" Last amount  %u\n",last_amount);
 
+    // for put out from time array;
+    int last_amount_counter = char_counting(amount_char_array);
+
+    for(register int wa=0; wa<last_record_counter; wa++){
+
+        if(db[user_index].tr[last].note[wa] == '@'){
+            break;
+        } else{
+            time_index_counter++;
+        }
+    }
+    last_hours_array[0]=db[user_index].tr[last].note[time_index_counter+1];
+    last_hours_array[1]=db[user_index].tr[last].note[time_index_counter+2];
+
+    last_hour = char_to_integer_fun(last_hours_array);
+    int time_ = 0;
+    int colon_counter=0;
+    for(int i=time_index_counter+1; i<time_index_counter+6; i++){
+
+        if(db[user_index].tr[last].note[i] == ':'){
+            colon_counter++;
+
+
+        } else{
+            if(colon_counter==1) {
+                time_array[time_] = db[user_index].tr[last].note[i];
+                time_++;
+                if(time_==2){
+                    break;
+                }
+            }
+        }
+
+    }
+    last_time = char_to_integer_fun(time_array);
+    printf(" \nlast time in integer: %d",last_time);
+
+
+
 }
+
+
 
 //void get_time_and_amount(int user_index){
 //
@@ -1068,6 +1156,25 @@ unsigned int char_to_integer_fun(char char_array[50]){
     }
 
     return char_to_int_data;
+}
+
+
+unsigned int get_current_time_toCalculate(){
+
+    char current_min_array[2];
+    get_time();
+    current_min_array[0]=getCTime[0].curTime[15];
+    current_min_array[1]=getCTime[0].curTime[16];
+    return char_to_integer_fun(current_min_array);
+}
+
+unsigned int get_current_hour_toCalculate(){
+    get_time();
+    char current_hour_array[2];
+    current_hour_array[0]=getCTime[0].curTime[12];
+    current_hour_array[1]=getCTime[0].curTime[13];
+
+    return char_to_integer_fun(current_hour_array);
 }
 
 #endif //ONLINEBANKPJ_ONLINEBANK_H
