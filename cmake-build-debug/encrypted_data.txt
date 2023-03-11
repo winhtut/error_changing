@@ -1,4 +1,4 @@
-1 admin1 9/paoola(N)00099 win@gmail.com admin123 95945374 aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.5 PyinOoLwin 5000 OnlineBankAdmin Fromadmin1todefault-Sun-Mar--5@15:40:49-2023$1500
-2 admin2 9/ygn(N)00099 winhtut@gmail.com admin123 9594537 aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.5 PyinOoLwin 5000 OnlineBankAdmin
-3 admin3 9/mdy(N)00099 national@gmail.com admin123 9594531 aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.5 PyinOoLwin 5000 OnlineBankAdmin
-4 default 9/paoola(N)00099 institute@gmail.com default 9594532 aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.5 PyinOoLwin 5000 OnlineBankAdmin
+1 admin1 9/paoola(N)00099 win@gmail.com admin123 95945374 aaa123aaa123wh aaa123wh personal 1 1 10000 MMK 12900 T 5000 1 0.500000 PyinOoLwin 5000 Fromadmin1todefault-Fri!Mar-10-14:31:41@2023$100 Fromadmin1todefault-Fri!Mar-09-14:37:01@2023$1000
+2 admin2 9/ygn(N)00099 winhtut@gmail.com admin123 9594537 aaa123aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.500000 PyinOoLwin 5000 OnlineBankAdmin
+3 admin3 9/mdy(N)00099 national@gmail.com admin123 9594531 aaa123aaa123wh aaa123wh personal 1 1 10000 MMK 15000 T 5000 1 0.500000 PyinOoLwin 5000 OnlineBankAdmin
+4 default 9/paoola(N)00099 institute@gmail.com default 9594532 aaa123aaa123wh aaa123wh personal 1 1 10000 MMK 17100 T 5000 1 0.500000 PyinOoLwin 5000 default-ReceiveFrom-admin1-Fri!Mar-10-14:22:09@2023$100 default-ReceiveFrom-admin1-Fri!Mar-10-14:31:41@2023$1000  default-ReceiveFrom-admin1-Fri!Mar-10-14:37:01@2023$1000

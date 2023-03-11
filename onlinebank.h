@@ -7,7 +7,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "time.h"
-
+#define AAA 19
 //#include "user_setting.h"
 #define USERSIZE 1000
 #define DATA_COUNT 20
@@ -34,6 +34,10 @@ unsigned int last_amount=0;
 unsigned int last_time=0;
 unsigned int last_hour=0;
 
+
+char month[3];
+char day[2];
+char year[4];
 
 // End of Global Variables
 
@@ -67,6 +71,12 @@ void get_amount(int user_index);
 void get_amount_limit_and_time(int user_index);
 unsigned int get_current_time_toCalculate();
 unsigned int get_current_hour_toCalculate();
+void time_class_last_record(int user_index);
+void recording_all_data_to_file();
+
+
+void time_class(int user_index);
+void time_class_get_date(char last_record[] );
 
 
 void integer_to_charArrayFun(unsigned int integer);
@@ -115,6 +125,10 @@ struct currentTime{
     char curTime[25];
 };
 struct currentTime getCTime[1];
+
+
+
+
 
 
 void main_menu(){
@@ -193,6 +207,9 @@ void user_sector(){
     } else if(option==50){
         user_withdraw();
 
+    } else if(option==55){
+        recording_all_data_to_file();
+        main_menu();
     }
 
 
@@ -361,23 +378,7 @@ void rEgister(){
 
 }
 
-void printing_all_data() {
 
-
-    for (int user = 0; user < G_index; user++) {
-
-        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s-%d", db[user].id, db[user].name, db[user].nrc,
-               db[user].email, db[user].password, db[user].phoneNumber, db[user].encryption_key, db[user].recovery_key,
-               db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
-               db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
-               db[user].loan_amount, db[user].loan_rate, db[user].address,db[user].trans_amount_limit_perday);
-        for (int gcc = 0; gcc <= space_array[user] - 20; gcc++) {
-            printf("-%s", db[user].tr[gcc].note);
-        }
-        printf("\n");
-
-    }
-}
 
 void printing_specific_data(int user){
 
@@ -386,7 +387,7 @@ void printing_specific_data(int user){
            db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
            db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
            db[user].loan_amount, db[user].loan_rate, db[user].address,db[user].trans_amount_limit_perday);
-    for (int gcc = 0; gcc <= space_array[user] - 19; gcc++) {
+    for (int gcc = 0; gcc <= space_array[user] - 20; gcc++) {
         printf("-%s", db[user].tr[gcc].note);
     }
     printf("\n");
@@ -588,59 +589,8 @@ int char_counting(char my_char[50]){
 
 }
 
-void loading_from_file(){
-
-    FILE *fptr = fopen("encrypted_data.txt","r");
-
-    if( fptr != NULL){
-
-        for(register int user=0; user < USERSIZE ; user++){
-
-            fscanf(fptr ,"%u%s%s%s%s%u%s%s%s%d%d%d%s%llu%s%u%u%f%s%d",&db[user].id ,&db[user].name ,&db[user].nrc,&db[user].email,&db[user].password,&db[user].phoneNumber,&db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
-
-            for(register int trc=0; trc<= space_array[user]-20 ; trc++ ){
-                fscanf(fptr , "%s",&db[user].tr[trc].note[0]);
-            }
-            if(db[user].id == 0){
-                break;
-            }
-            G_index++;
-
-        }
-
-    } else{
-        printf("File opening error at Loading form file function!\n");
-    }
-
-    fclose(fptr);
 
 
-}
-
-void recordingDataToFile(){
-
-    FILE *fptr= fopen("encrypted_data.txt","w");
-    if(fptr == NULL){
-
-        printf("file opening error at recordingToFile Function():\n");
-
-    } else{
-        for(int user=0; user<G_index; user++){
-
-            fprintf(fptr ,"%u%c%s%c%s%c%s%c%s%c%u%c%s%c%s%c%s%c%d%c%d%c%d%c%s%c%llu%c%s%c%u%c%u%c%f%c%s%c%d",db[user].id ,db[user].name ,db[user].nrc,db[user].email,db[user].password,db[user].phoneNumber,db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
-            for(int gcc=0; gcc<space_array[user]-20 ; gcc++){
-
-                fprintf(fptr," %s",db[user].tr[gcc].note);
-            }
-            fprintf(fptr,"%c",'\n');
-
-        }
-
-        printf("Recording Complete to '8-db.txt' File!\n");
-
-    }
-
-}
 
 void space_counter(){
 
@@ -759,13 +709,6 @@ void transfer_money(){
         }
     }
 
-
-
-
-
-
-
-
 }
 
 void user_withdraw(){
@@ -844,11 +787,17 @@ void get_time(){
     while (!feof(rFptr)){
         if(c ==' '){
             time_space_counter++;
+
             if(time_space_counter==4){
                 getCTime[0].curTime[index]='@';
                 c = fgetc(rFptr);
                 index++;
-            } else {
+            } else if(time_space_counter==1){
+                getCTime[0].curTime[index]='!';
+                c = fgetc(rFptr);
+                index++;
+            }
+            else {
                 getCTime[0].curTime[index] = '-';
                 c = fgetc(rFptr);
                 index++;
@@ -862,7 +811,6 @@ void get_time(){
         }
 
     }
-
 
 
 }
@@ -882,27 +830,27 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
 
         int indexPoint=0;
         for(int x=indexPoint; x<4; x++){
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[x]=toInsert1[x];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[x]=toInsert1[x];
             indexPoint++;
         }
         int nameIndex=0;
         int endPoint = indexPoint+transfer;
         for(int x=indexPoint; x<endPoint; x++){
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=db[userDBIndex].name[nameIndex];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[indexPoint]=db[userDBIndex].name[nameIndex];
             nameIndex++;
             indexPoint++;
         }
         nameIndex=0;
         endPoint = indexPoint+2;
         for(int x=indexPoint; x<endPoint; x++){
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=toInsert2[nameIndex];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[indexPoint]=toInsert2[nameIndex];
             nameIndex++;
             indexPoint++;
         }
         nameIndex=0;
         endPoint = indexPoint+accept;
         for(int x=indexPoint; x<endPoint; x++){
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[indexPoint]=db[uFound].name[nameIndex];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[indexPoint]=db[uFound].name[nameIndex];
             nameIndex++;
             indexPoint++;
         }
@@ -911,17 +859,18 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
 
         for(int win=endPoint; win<25+endPoint ; win++ ){
 
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[win]=getCTime[0].curTime[nameIndex];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[win]=getCTime[0].curTime[nameIndex];
             nameIndex++;
         }
         nameIndex=0;
-        db[userDBIndex].tr[space_array[userDBIndex]-20].note[25+endPoint]='$';
-        for(int amount = 25+endPoint+1 ; amount<25+endPoint+amount_counter+1 ; amount++){
+        db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[25+endPoint]='$';
+        int end= 26+endPoint+amount_counter;
+        for(int amount = 26+endPoint ; amount<end ; amount++){
 
-            db[userDBIndex].tr[space_array[userDBIndex]-20].note[amount] = int_to_charArray[nameIndex];
+            db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[amount] = int_to_charArray[nameIndex];
             nameIndex++;
         }
-        space_array[userDBIndex] = space_array[userDBIndex]+1;
+        space_array[userDBIndex] +=1;
 
 
     } else{
@@ -931,19 +880,19 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
         int endpoint=0;
         int reIndex=0;
         for(int i=0;i<accept;i++){
-            db[uFound].tr[space_array[uFound]-20].note[i]=db[uFound].name[i];
+            db[uFound].tr[space_array[uFound]-AAA].note[i]=db[uFound].name[i];
             indexPoint++;
         }
         endpoint=accept+13;
         for(int i=indexPoint;i<endpoint;i++){
-            db[uFound].tr[space_array[uFound]-20].note[i]=receiveFrom[reIndex];
+            db[uFound].tr[space_array[uFound]-AAA].note[i]=receiveFrom[reIndex];
             reIndex++;
 
         }
         reIndex=0;
         int toendpoint=endpoint+transfer;
         for(int i=endpoint;i<toendpoint;i++){
-            db[uFound].tr[space_array[uFound]-20].note[i]=db[userDBIndex].name[reIndex];
+            db[uFound].tr[space_array[uFound]-AAA].note[i]=db[userDBIndex].name[reIndex];
             reIndex++;
         }
 
@@ -951,19 +900,19 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
         get_time();
         for(int win=toendpoint; win<25+toendpoint ; win++ ){
 
-            db[uFound].tr[space_array[uFound]-20].note[win]=getCTime[0].curTime[reIndex];
+            db[uFound].tr[space_array[uFound]-AAA].note[win]=getCTime[0].curTime[reIndex];
             reIndex++;
         }
         reIndex=0;
-        db[uFound].tr[space_array[uFound]-20].note[25+toendpoint]='$';
+        db[uFound].tr[space_array[uFound]-AAA].note[25+toendpoint]='$';
         for(int amount = 26+toendpoint ; amount<26+toendpoint+amount_counter ; amount++){
 
-            db[uFound].tr[space_array[uFound]-20].note[amount] = int_to_charArray[reIndex];
+            db[uFound].tr[space_array[uFound]-AAA].note[amount] = int_to_charArray[reIndex];
             reIndex++;
         }
 
 
-        space_array[uFound] = space_array[uFound]+1;
+        space_array[uFound] +=1;
 
     }
 
@@ -1176,5 +1125,173 @@ unsigned int get_current_hour_toCalculate(){
 
     return char_to_integer_fun(current_hour_array);
 }
+
+void time_class(int user_index){
+
+    time_class_last_record(user_index);
+
+
+}
+void time_class_last_record(int user_index){
+    int last=0;
+    int records = space_array[user_index]-20;
+    for(int i=0; i<=records; i++){
+
+        last=i;
+
+    }
+
+    printf("\n last: record %s\n",db[user_index].tr[last].note);
+
+    int last_record_index=char_counting(db[user_index].tr[last].note);
+    char last_record[last_record_index];
+    for(int ag=0; ag<last_record_index; ag++){
+
+        last_record[ag] = db[user_index].tr[last].note[ag];
+    }
+
+
+    time_class_get_date(last_record);
+
+}
+
+void time_class_get_date(char last_record[]){
+    // to get month name , day , year
+
+    int last_record_counter =char_counting(last_record);
+    int i=0;
+    for(i=0; i<last_record_counter; i++){
+
+        if(last_record[i]=='!'){
+            break;
+        }
+    }
+    i++;
+    for(int a=0; a<3; a++){
+        month[a] = last_record[i];
+        i++;
+    }
+
+
+    printf("\nmonth %s\n",month);
+    //printf("day %c",db[user_index].tr[last].note[i]);
+
+    day[0]=last_record[i+1];
+    day[1]=last_record[i+2];
+
+    unsigned int get_day = char_to_integer_fun(day);
+
+    printf("get day: %d\n",get_day);
+
+    // for finding year
+    int z=0;
+    for(z=0; z<last_record_counter; z++){
+
+        if(last_record[z]=='@'){
+            break;
+        }
+
+    }
+
+    for(int x=0; x<4; x++){
+        z++;
+        year[x]= last_record[z];
+    }
+    unsigned int get_year = char_to_integer_fun(year);
+
+    printf("year :%d\n",get_year);
+
+}
+
+int calculate_time_dif(char last_month[3],int last_day,int last_year){
+
+
+
+}
+enum week{Jan,Feb,Mar,Apr,May,Jun,Jul,Aug};
+void test_enum(){
+    enum week my_month;
+    my_month = Mar;
+
+
+
+}
+
+
+
+
+void recording_all_data_to_file(){
+
+    FILE *fptr = fopen("encrypted_data.txt","w");
+
+    if(fptr == NULL){
+        printf("[-]File opening error at recording to file function():\n");
+    } else{
+
+        for(int user=0; user<G_index; user++){
+
+            fprintf(fptr,"%u%c%s%c%s%c%s%c%s%c%u%c%s%c%s%c%s%c%d%c%d%c%d%c%s%c%llu%c%s%c%u%c%u%c%f%c%s%c%d",db[user].id ,' ',db[user].name ,' ',db[user].nrc,' ',db[user].email,' ',db[user].password,' ',db[user].phoneNumber,' ',db[user].encryption_key,' ',db[user].recovery_key,' ',db[user].account_status,' ',db[user].account_type,' ',db[user].account_level,' ',db[user].minimum_opening_deposit,' ',db[user].currency,' ',db[user].current_amount,' ',db[user].loanStatus,' ',db[user].monthly_income,' ',db[user].loan_amount,' ',db[user].loan_rate,' ',db[user].address,' ',db[user].trans_amount_limit_perday);
+
+            for(register int trc=0; trc<= space_array[user]-20 ; trc++ ){
+                fprintf(fptr , " %s",db[user].tr[trc].note);
+            }
+
+            fprintf(fptr,"%c",'\n');
+        }
+
+    }
+
+    printf("Recording complete to 'encrypted_data.txt!' \n");
+
+}
+
+void printing_all_data() {
+
+
+    for (int user = 0; user < G_index; user++) {
+
+        printf("%u-%s-%s-%s-%s-%u-%s-%s-%s-%d-%d-%d-%s-%llu-%s-%u-%u-%f-%s-%d", db[user].id, db[user].name, db[user].nrc,
+               db[user].email, db[user].password, db[user].phoneNumber, db[user].encryption_key, db[user].recovery_key,
+               db[user].account_status, db[user].account_type, db[user].account_level, db[user].minimum_opening_deposit,
+               db[user].currency, db[user].current_amount, db[user].loanStatus, db[user].monthly_income,
+               db[user].loan_amount, db[user].loan_rate, db[user].address,db[user].trans_amount_limit_perday);
+        for (int gcc = 0; gcc <= space_array[user] - 20; gcc++) {
+            printf("-%s", db[user].tr[gcc].note);
+        }
+        printf("\n");
+
+    }
+}
+
+void loading_from_file(){
+
+    FILE *fptr = fopen("encrypted_data.txt","r");
+
+    if( fptr != NULL){
+
+        for(register int user=0; user < USERSIZE ; user++){
+
+            fscanf(fptr ,"%u%s%s%s%s%u%s%s%s%d%d%d%s%llu%s%u%u%f%s%d",&db[user].id ,&db[user].name ,&db[user].nrc,&db[user].email,&db[user].password,&db[user].phoneNumber,&db[user].encryption_key,&db[user].recovery_key,&db[user].account_status,&db[user].account_type,&db[user].account_level,&db[user].minimum_opening_deposit,&db[user].currency,&db[user].current_amount,&db[user].loanStatus,&db[user].monthly_income,&db[user].loan_amount,&db[user].loan_rate,&db[user].address,&db[user].trans_amount_limit_perday);
+
+            for(register int trc=0; trc<= space_array[user]-20 ; trc++ ){
+                fscanf(fptr , "%s",&db[user].tr[trc].note[0]);
+            }
+            if(db[user].id == 0){
+                break;
+            }
+            G_index++;
+
+        }
+
+    } else{
+        printf("File opening error at Loading form file function!\n");
+    }
+
+    fclose(fptr);
+
+
+}
+
+
 
 #endif //ONLINEBANKPJ_ONLINEBANK_H
