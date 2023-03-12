@@ -34,10 +34,16 @@ unsigned int last_amount=0;
 unsigned int last_time=0;
 unsigned int last_hour=0;
 
+int transaction_pass=-1;
+unsigned int transaction_amount_over=0;
+
+unsigned int to_transfer_money=0;
+
 
 char month[3];
 char day[2];
 char year[4];
+char money[10];
 
 // End of Global Variables
 
@@ -81,6 +87,7 @@ void time_class_get_date(char last_record[] );
 
 void integer_to_charArrayFun(unsigned int integer);
 unsigned int char_to_integer_fun(char char_array[50]);
+void calculate_time_dif(char last__month[3],unsigned int last__day,unsigned int last__year,unsigned int last__money,unsigned int limit_amount);
 
 
 struct trans{
@@ -738,21 +745,58 @@ void user_withdraw(){
 
 }
 
+struct my_month{
+    char str_month[3];
+};
+struct my_month _month[1];
 void money_transaction(int transmit , int receiver , unsigned int amount){
 
 
-    db[transmit].current_amount= db[transmit].current_amount-amount;
-    db[receiver].current_amount = db[receiver].current_amount+amount;
-    //for insert amount to transaction record will get character array;
-    integer_to_charArrayFun(amount);
-    transacitonRecord(transmit,receiver,'t');
-    transacitonRecord(transmit,receiver,'r');
-    printf("Transaction complete:\n");
-    printf("Your current amount: %s : %llu\n",db[transmit].name , db[transmit].current_amount);
-    printing_specific_data(transmit);
-    printf("\n\n\n\n");
-    printing_all_data();
-    user_sector();
+    //before data
+
+    time_class_last_record(transmit);
+    unsigned int last_day = char_to_integer_fun(day);
+    unsigned int last_year = char_to_integer_fun(year);
+    unsigned int last_money = char_to_integer_fun(money);
+    copy_two_char_array(_month[0].str_month,month);
+//    last_month[0]=month[0];
+//    last_month[1]=month[1];
+//    last_month[2]=month[2];
+    printf("\n\n After copy two char array %s\n",_month[0].str_month);
+    get_amount(transmit);
+    to_transfer_money=amount;
+
+
+    // after data
+
+    get_time();
+    time_class_get_date(getCTime[0].curTime);
+    calculate_time_dif(_month[0].str_month,last_day,last_year,amount,trans_limit);
+
+    if(transaction_pass==1){
+        db[transmit].current_amount= db[transmit].current_amount-amount;
+        db[receiver].current_amount = db[receiver].current_amount+amount;
+        //for insert amount to transaction record will get character array;
+        integer_to_charArrayFun(amount);
+
+
+
+        transacitonRecord(transmit,receiver,'t');
+        transacitonRecord(transmit,receiver,'r');
+        printf("Transaction complete:\n");
+        printf("Your current amount: %s : %llu\n",db[transmit].name , db[transmit].current_amount);
+        printing_specific_data(transmit);
+        printf("\n\n\n\n");
+        printing_all_data();
+        user_sector();
+    } else{
+
+        printf("You are exceeded over your limit %d:",transaction_amount_over);
+        transfer_money();
+    }
+
+
+
 
 }
 
@@ -870,6 +914,7 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
             db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[amount] = int_to_charArray[nameIndex];
             nameIndex++;
         }
+        db[userDBIndex].tr[space_array[userDBIndex]-AAA].note[end]='-';
         space_array[userDBIndex] +=1;
 
 
@@ -911,7 +956,7 @@ void transacitonRecord(int userDBIndex,int uFound,char who){
             reIndex++;
         }
 
-
+        db[uFound].tr[space_array[uFound]-AAA].note[26+toendpoint+amount_counter]='-';
         space_array[uFound] +=1;
 
     }
@@ -1155,67 +1200,112 @@ void time_class_last_record(int user_index){
 
 }
 
-void time_class_get_date(char last_record[]){
+void time_class_get_date(char last_record[]) {
     // to get month name , day , year
 
-    int last_record_counter =char_counting(last_record);
-    int i=0;
-    for(i=0; i<last_record_counter; i++){
+    int last_record_counter = char_counting(last_record);
+    int i = 0;
+    for (i = 0; i < last_record_counter; i++) {
 
-        if(last_record[i]=='!'){
+        if (last_record[i] == '!') {
             break;
         }
     }
     i++;
-    for(int a=0; a<3; a++){
+    for (int a = 0; a < 3; a++) {
         month[a] = last_record[i];
         i++;
     }
 
 
-    printf("\nmonth %s\n",month);
+    printf("\nmonth %s\n", month);
     //printf("day %c",db[user_index].tr[last].note[i]);
 
-    day[0]=last_record[i+1];
-    day[1]=last_record[i+2];
+    day[0] = last_record[i + 1];
+    day[1] = last_record[i + 2];
 
     unsigned int get_day = char_to_integer_fun(day);
 
-    printf("get day: %d\n",get_day);
+    printf("get day: %d\n", get_day);
 
     // for finding year
-    int z=0;
-    for(z=0; z<last_record_counter; z++){
+    int z = 0;
+    for (z = 0; z < last_record_counter; z++) {
 
-        if(last_record[z]=='@'){
+        if (last_record[z] == '@') {
             break;
         }
 
     }
 
-    for(int x=0; x<4; x++){
+    for (int x = 0; x < 4; x++) {
         z++;
-        year[x]= last_record[z];
+        year[x] = last_record[z];
     }
     unsigned int get_year = char_to_integer_fun(year);
 
-    printf("year :%d\n",get_year);
+    printf("year :%d\n", get_year);
+
+    int y = 0;
+    for (y = z; y < last_record_counter; y++) {
+
+        if (last_record[y] == '$')
+            break;
+    }
+    y++;
+    int a = 0;
+    int quantity_of_money = 0;
+    for (a = y; a < last_record_counter; a++) {
+
+        if (last_record[a] == '-') {
+            break;
+        } else {
+            money[quantity_of_money] = last_record[a];
+            quantity_of_money++;
+        }
+
+    }
+
+    printf("Quantity of money %d\n", quantity_of_money);
+
+    unsigned int money_amount = char_to_integer_fun(money);
+    printf("money_amount %u",money_amount);
+
+
 
 }
 
-int calculate_time_dif(char last_month[3],int last_day,int last_year){
+void calculate_time_dif(char last__month[],unsigned int last__day,unsigned int last__year,unsigned int last__money,unsigned int limit_amount){
+    unsigned int current_day=char_to_integer_fun(day);
+    unsigned int current_year= char_to_integer_fun(year);
+    unsigned int current_money= to_transfer_money;//golobal money
+    two_charArray=-1;
+    printf("\n\n\n----last month %s",last__month);
+    compare_two_charArray(last__month,month);
 
+
+    if(current_day==last__day && current_year ==last__year && two_charArray==1) {
+
+        if(limit_amount<current_money+last__money){
+            transaction_pass=-1;
+            transaction_amount_over = limit_amount-(current_money+last__money);
+            return;
+
+        } else{
+            transaction_pass=1;
+            return;
+
+        }
+
+    } else{
+
+        transaction_pass=1;
+        return;
+    }
 
 
 }
-enum week{Jan,Feb,Mar,Apr,May,Jun,Jul,Aug};
-void test_enum(){
-    enum week my_month;
-    my_month = Mar;
 
-
-
-}
 
 
 
