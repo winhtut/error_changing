@@ -79,6 +79,7 @@ unsigned int get_current_time_toCalculate();
 unsigned int get_current_hour_toCalculate();
 void time_class_last_record(int user_index);
 void recording_all_data_to_file();
+int total_money_for_same_days(int transmit,int last_day);
 
 
 void time_class(int user_index);
@@ -757,12 +758,20 @@ void money_transaction(int transmit , int receiver , unsigned int amount){// amo
     unsigned int last_year = char_to_integer_fun(year);
     unsigned int last_money = char_to_integer_fun(money);
     copy_two_char_array(_month[0].str_month,month);
-//    last_month[0]=month[0];
-//    last_month[1]=month[1];
-//    last_month[2]=month[2];
+
+    //
+    /*To calculate transaction record for all same days....battery30% */
+
+
+    int total_amount_tranferred = total_money_for_same_days(transmit,last_day);
+    total_amount_tranferred = total_amount_tranferred+amount;
+
+
+
+    //
     printf("\n\n After copy two char array %s\n",_month[0].str_month);
     get_amount(transmit);// to get trans amount limit per pay
-    to_transfer_money=amount;
+    to_transfer_money=total_amount_tranferred;
     // after data
     get_time();
     time_class_get_date(getCTime[0].curTime);
@@ -779,12 +788,12 @@ void money_transaction(int transmit , int receiver , unsigned int amount){// amo
         printf("Transaction complete:\n");
         printf("Your current amount: %s : %llu\n",db[transmit].name , db[transmit].current_amount);
         printing_specific_data(transmit);
-        printf("\n\n\n\n");
+        printf("\n\n");
         printing_all_data();
         user_sector();
     } else{
 
-        printf("You are exceeded over your limit %d:",transaction_amount_over);
+        printf("\nYou are exceeded over your limit %d:\n",transaction_amount_over);
         transfer_money();
     }
 
@@ -1373,6 +1382,78 @@ void loading_from_file(){
     fclose(fptr);
 
 
+}
+
+
+int total_money_for_same_days(int transmit,int last_day){
+
+    int to_return_money=0;
+
+
+    int index_counter=0;
+
+    // to calculate temp day
+
+    int to_get_all_records=space_array[transmit]-20;
+    //printf("\n\n toal_money_for_same_day: %s\n",db[transmit].tr[to_get_all_records].note);
+    // to get all records
+    for(int wa=to_get_all_records-1; wa>0; wa--){
+        //to calcuate temp day
+        char temp_day[2];
+        //to count char for current note
+        int current_trans_counter =char_counting(db[transmit].tr[wa].note);
+
+        for(int aw=0; aw<current_trans_counter; aw++){
+
+            if(db[transmit].tr[wa].note[aw]=='!'){
+                break;
+            }
+            index_counter++;
+        }
+
+        temp_day[0]=db[transmit].tr[wa].note[index_counter+5];
+        temp_day[1]=db[transmit].tr[wa].note[index_counter+6];
+        unsigned int temp_day_int=char_to_integer_fun(temp_day);
+        printf("\n temp day for %d record = %d\n",wa,temp_day_int);
+
+        if(temp_day_int!=last_day){
+            break;
+        } else{
+
+            for(int m=index_counter; m<current_trans_counter; m++){
+
+                if(db[transmit].tr[wa].note[m]=='$'){
+                    break;
+                }
+                index_counter++;
+
+            }
+            int quantity_of_money=0;
+            char current_amount_char[10];
+            for(int ko=index_counter; ko<current_trans_counter; ko++){
+                if(db[transmit].tr[wa].note[ko]=='-'){
+                    break;
+                }
+                quantity_of_money++;
+            }
+
+            index_counter++;
+            for(int v=0; v<quantity_of_money; v++){
+                current_amount_char[v]=db[transmit].tr[wa].note[index_counter];
+                index_counter++;
+            }
+            unsigned int amount_for_current_trans = char_to_integer_fun(current_amount_char);
+            printf("Amount for current transaction: %d\n",amount_for_current_trans);
+            index_counter=0;
+            to_return_money = to_return_money+amount_for_current_trans;
+
+        }
+
+
+    }
+
+    printf("\nTotal Money except last record's money for all same days: %d\n",to_return_money);
+    return to_return_money;
 }
 
 

@@ -6,6 +6,11 @@ int main(){
     loading_from_file();
     printing_all_data();
     main_menu();
+
+
+    //total_money_for_same_days(0,15);
+
+
 //    get_time();
 //    printf("cur time %s\n",getCTime[0].curTime);
 //
