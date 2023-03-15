@@ -694,27 +694,27 @@ void transfer_money(){
         }
     }
     // write transfer amount limit here
-    get_amount(email_found);
+    //get_amount(email_found);
     //trans_limit
-    get_amount_limit_and_time(email_found);
+    //get_amount_limit_and_time(email_found);
     //last_amount , last_time , last_hours
-    unsigned int current_hour = get_current_hour_toCalculate();
+    //unsigned int current_hour = get_current_hour_toCalculate();
 
-    if(last_hour!=current_hour){
-        money_transaction(email_found,phone_found,amount_toTrans);
-    } else {
-        unsigned int current_minute = get_current_time_toCalculate();
-        unsigned int time_different = current_minute - last_time;
-        if (time_different > 3) {
-            money_transaction(email_found, phone_found, amount_toTrans);
-        } else {
-            if (last_amount + amount_toTrans > trans_limit) {
-                printf("Your daily limit was over:\n\n");
-                transfer_money();
-            }
-
-        }
-    }
+    //if(last_hour!=current_hour){
+    money_transaction(email_found,phone_found,amount_toTrans);
+//    } else {
+//        unsigned int current_minute = get_current_time_toCalculate();
+//        unsigned int time_different = current_minute - last_time;
+//        if (time_different > 3) {
+//            money_transaction(email_found, phone_found, amount_toTrans);
+//        } else {
+//            if (last_amount + amount_toTrans > trans_limit) {
+//                printf("Your daily limit was over:\n\n");
+//                transfer_money();
+//            }
+//
+//        }
+//    }
 
 }
 
@@ -749,9 +749,7 @@ struct my_month{
     char str_month[3];
 };
 struct my_month _month[1];
-void money_transaction(int transmit , int receiver , unsigned int amount){
-
-
+void money_transaction(int transmit , int receiver , unsigned int amount){// amount is to transfer
     //before data
 
     time_class_last_record(transmit);
@@ -763,23 +761,18 @@ void money_transaction(int transmit , int receiver , unsigned int amount){
 //    last_month[1]=month[1];
 //    last_month[2]=month[2];
     printf("\n\n After copy two char array %s\n",_month[0].str_month);
-    get_amount(transmit);
+    get_amount(transmit);// to get trans amount limit per pay
     to_transfer_money=amount;
-
-
     // after data
-
     get_time();
     time_class_get_date(getCTime[0].curTime);
-    calculate_time_dif(_month[0].str_month,last_day,last_year,amount,trans_limit);
+    calculate_time_dif(_month[0].str_month,last_day,last_year,last_money,trans_limit);
 
     if(transaction_pass==1){
         db[transmit].current_amount= db[transmit].current_amount-amount;
         db[receiver].current_amount = db[receiver].current_amount+amount;
         //for insert amount to transaction record will get character array;
         integer_to_charArrayFun(amount);
-
-
 
         transacitonRecord(transmit,receiver,'t');
         transacitonRecord(transmit,receiver,'r');
@@ -794,9 +787,6 @@ void money_transaction(int transmit , int receiver , unsigned int amount){
         printf("You are exceeded over your limit %d:",transaction_amount_over);
         transfer_money();
     }
-
-
-
 
 }
 
@@ -1255,6 +1245,9 @@ void time_class_get_date(char last_record[]) {
     y++;
     int a = 0;
     int quantity_of_money = 0;
+    for(int llc=0; llc<10 ; llc++){
+        money[llc]='\0';
+    }
     for (a = y; a < last_record_counter; a++) {
 
         if (last_record[a] == '-') {
