@@ -152,6 +152,7 @@ void main_menu(){
     }else if(option == 50){
         rEgister();
     } else if(option ==51){
+        recording_all_data_to_file();
         printf("Good Bye!\n");
         exit(2);
     } else{
@@ -372,8 +373,9 @@ void rEgister(){
         copy_two_char_array(db[G_index].loanStatus,db[2].loanStatus);
         db[G_index].loan_amount = db[2].loan_amount;
         db[G_index].loan_rate = db[2].loan_rate;
+        db[G_index].trans_amount_limit_perday = db[2].trans_amount_limit_perday;
 
-        space_array[G_index]=19;
+        space_array[G_index]=20;
         G_index++;
 
 
@@ -1085,24 +1087,6 @@ void get_amount_limit_and_time(int user_index){
 
 
 
-//void get_time_and_amount(int user_index){
-//
-//    unsigned int trans_limit=0;
-//    int p_or_b = db[user_index].account_type;
-//    int acc_level = db[user_index].account_level;
-//
-//
-//    unsigned int amount_array[7]={5000,20000,50000,200000,500000,2000000,5000000};
-//    for(int i=1; i<7 ; i++){
-//        for(int a=0; a<i; a++){
-//
-//        }
-//
-//    }
-//
-//}
-
-
 void integer_to_charArrayFun(unsigned int integer){
         int index=0;
         FILE *fptr = fopen("whw.txt","w");
@@ -1151,24 +1135,6 @@ unsigned int char_to_integer_fun(char char_array[50]){
     return char_to_int_data;
 }
 
-
-unsigned int get_current_time_toCalculate(){
-
-    char current_min_array[2];
-    get_time();
-    current_min_array[0]=getCTime[0].curTime[15];
-    current_min_array[1]=getCTime[0].curTime[16];
-    return char_to_integer_fun(current_min_array);
-}
-
-unsigned int get_current_hour_toCalculate(){
-    get_time();
-    char current_hour_array[2];
-    current_hour_array[0]=getCTime[0].curTime[12];
-    current_hour_array[1]=getCTime[0].curTime[13];
-
-    return char_to_integer_fun(current_hour_array);
-}
 
 void time_class(int user_index){
 
@@ -1308,10 +1274,6 @@ void calculate_time_dif(char last__month[],unsigned int last__day,unsigned int l
 
 }
 
-
-
-
-
 void recording_all_data_to_file(){
 
     FILE *fptr = fopen("encrypted_data.txt","w");
@@ -1381,9 +1343,7 @@ void loading_from_file(){
 
     fclose(fptr);
 
-
 }
-
 
 int total_money_for_same_days(int transmit,int last_day){
 
